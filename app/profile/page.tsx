@@ -1,6 +1,6 @@
 "use client";
 import { ReactNode, useEffect, useState } from "react";
-
+import React from "react";
 import { Form, Formik } from "formik";
 import { Url } from "next/dist/shared/lib/router/router";
 import Image from "next/image";
@@ -25,6 +25,7 @@ import { useAppDispatch } from "@/context/hooks";
 import { getProfileApi } from "../../http";
 import { getLocaleData } from "../../service/authService";
 
+import { getUserProfile } from '../api/admin/dashboard'
 // ==========================================================
 // PROFILE PAGE COMPONENT =================================
 // ==========================================================
@@ -49,7 +50,7 @@ export default function ProfilePage() {
 
       {/* right - content  */}
       <div className="flex-1 space-y-8">
-        <ProfileSettings user={user} />
+        <ProfileSettings  />
         <NotificationSettings />
         <SecuritySettings />
       </div>
@@ -125,7 +126,21 @@ const UserSettingsLinks = () => {
   );
 };
 
-const ProfileSettings = ({user}:any) => {
+const ProfileSettings = () => {
+  const [user, setUser] = React.useState<any>({})
+  const [loadingProfile, setLoadingProfile] = React.useState<boolean>(true)
+  useEffect(() => {
+    getUserProfile().then((res: any) => {
+      if(res.data.status === 200 && res.data.msg === 'success') {
+        setLoadingProfile(false)
+        setUser(res.data.data)
+      } else {
+        setLoadingProfile(false)
+        alert("Unable to fetch user profile")
+        console.log('error')
+      }
+    })
+  }, [])
   return (
     <div className="rounded border border-appGray-450 hover:shadow-sm">
       {/* title  */}
@@ -142,7 +157,7 @@ const ProfileSettings = ({user}:any) => {
           <div className="w-56 flex items-center gap-5">
             <P1 className="text-black">User photo: </P1>
             <Image
-              src={userPlaceholder}
+              src={user.avatar}
               alt="user placeholder"
               width={50}
               height={50}
