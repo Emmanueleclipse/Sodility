@@ -26,13 +26,25 @@ import superFanIcon from "@/assets/creator/super-fan.png";
 import supporterIcon from "@/assets/creator/supporter.png";
 import { openModal } from "@/context/features/modal/modalSlice";
 import { useAppDispatch } from "@/context/hooks";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // ======================================================
 // CREATOR PAGE COMPONENT ===============================
 // ======================================================
 export default function CreatorAdminPage() {
   const dispatch = useAppDispatch();
-
+  const [userType , setUserType] = useState("")
+  const route = useRouter()
+  
+  useEffect(()=>{
+    const data = JSON.parse(localStorage.getItem("user") as any) as any
+    console.log(data,"rolerole")
+    if(data && data?.role != "creator" ) route.push("/")
+    else if(data==null&&userType==undefined) route.push("/")
+    setUserType(data?.role)
+  },[userType])
+  if(userType != "creator") return <></>
   return (
     <main>
       <section className="bg-creator-banner py-28" />

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // COMPONENTS
 import { Button, DropDown, SearchInput } from "@/components/shared";
@@ -19,6 +19,12 @@ import logo from "@/assets/logo.png";
 // HEADER LAYOUT COMPONENT ==================
 // ==========================================
 export default function Header() {
+  const [userType, setUserType]= useState("public");
+
+  useEffect(()=>{
+    const user = JSON.parse(localStorage.getItem("user") as any) as any
+    setUserType(user?.role || "public")
+  },[userType])
   const pathname = usePathname();
   const connectedUser =
     pathname === "/supporter"
@@ -27,13 +33,12 @@ export default function Header() {
       ? true
       : false;
 
-  const userType =
-    pathname === "/supporter"
-      ? "supporter"
-      : pathname.includes("/creator")
-      ? "creator"
-      : "public";
-
+  // const userType =
+  //   pathname === "/supporter"
+  //     ? "supporter"
+  //     : pathname?.includes("/creator") || pathname == "/dashboard"
+  //     ? "creator"
+  //     : "public";
   return (
     <header className="py-7 border-b border-b-appGray-400">
       <div className="md:w-[90%] mx-auto  px-6 flex flex-col md:flex-row justify-between md:items-center gap-4 md:gap-0">
@@ -58,13 +63,19 @@ export default function Header() {
             </Button>
           </div>
         )}
-        {userType === "supporter" && connectedUser ? (
+        {userType === "supporter" 
+        // && connectedUser 
+        ? (
           <SupporterNavigation />
-        ) : userType === "creator" && connectedUser ? (
+        ) : userType === "creator" 
+        // && true 
+        ? (
           <CreatorNavigation />
-        ) : userType !== "public" && !connectedUser ? (
+        ) : userType !== "public" 
+        && !connectedUser 
+        ? (
           <Button action={() => {}}>ConnectDash</Button>
-        ): null}
+        ) : null}
       </div>
     </header>
   );
@@ -73,6 +84,7 @@ export default function Header() {
 // EXTENDED COMPONENTS ======================
 const Navigation = () => {
   const pathname = usePathname();
+  const [auth, setAuth] = useState<any>("")
 
   const [dropDownActive, setDropDownActive] = useState(false);
 
@@ -112,7 +124,7 @@ const Navigation = () => {
       active: pathname === "/about",
       hasDropDown: false,
     },
-    {
+     {
       name: "Login",
       link: "/login",
       active: pathname === "/login",
@@ -120,10 +132,14 @@ const Navigation = () => {
     },
   ];
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setAuth(token);
+  }, [auth]);
   // RETURN ==============================================================
   return (
     <nav className="flex gap-10">
-      {navList.map(navItem => (
+      {navList.map((navItem) => (
         <div key={navItem.name} className="flex">
           {navItem.hasDropDown ? (
             <div
@@ -153,7 +169,7 @@ const Navigation = () => {
                 >
                   <ul className="py-2 pt-5 bg-white relative flex justify-between">
                     <div>
-                      {navItem.dropDown!.left.map(dropDownItem => (
+                      {navItem.dropDown!.left.map((dropDownItem) => (
                         <Link
                           key={dropDownItem.name}
                           href={dropDownItem.link}
@@ -169,7 +185,7 @@ const Navigation = () => {
                       ))}
                     </div>
                     <div>
-                      {navItem.dropDown!.right.map(dropDownItem => (
+                      {navItem.dropDown!.right.map((dropDownItem) => (
                         <Link
                           key={dropDownItem.name}
                           href={dropDownItem.link}
@@ -204,6 +220,36 @@ const Navigation = () => {
           )}
         </div>
       ))}
+     {/* {!auth ?(<Link
+              key={`Login`}
+              href={`/login`}
+              // onClick={() => signIn()}
+              className={`${
+                // navItem.active
+                //   ? 
+                  "text-primary font-semibold"
+                  // : "text-[#393e49] hover:text-primary"
+              } text-sm`}
+            >
+              <SubH1>Login</SubH1>
+            </Link>) :(<Link
+        key={"logout"}
+        href="/"
+        onClick={() => {
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+          window.location.href = "/"
+        }}
+        className={`${
+          // navItem.active
+          // ?
+          "text-primary font-semibold"
+          // :
+          // "text-[#393e49] hover:text-primary"
+        } text-sm`}
+      >
+        <SubH1>Logout</SubH1>
+      </Link>)} */}
     </nav>
   );
 };
@@ -275,11 +321,16 @@ const SupporterNavigation = () => {
           arrowPosition="-top-2 right-7"
         >
           <ul className="py-2 pt-5 bg-white relative flex flex-col justify-between">
-            {navList.map(navItem => (
+            {navList.map((navItem) => (
               <Link
                 key={navItem.name}
                 href={navItem.link}
-                onClick={() => setDropDownActive(!dropDownActive)}
+                onClick={navItem.name== "Log Out"?(()=>{
+                  localStorage.removeItem("token")
+                  localStorage.removeItem("user")
+                  // router.push("/")
+                  window.location.href = '/';
+                }):(() => setDropDownActive(!dropDownActive))}
                 className={`${
                   navItem.active
                     ? "text-primary"
@@ -368,11 +419,16 @@ const CreatorNavigation = () => {
           arrowPosition="-top-2 right-7"
         >
           <ul className="py-2 pt-5 bg-white relative flex flex-col justify-between">
-            {navList.map(navItem => (
+            {navList.map((navItem) => (
               <Link
                 key={navItem.name}
                 href={navItem.link}
-                onClick={() => setDropDownActive(!dropDownActive)}
+                onClick={navItem.name== "Log Out"?(()=>{
+                  localStorage.removeItem("token")
+                  localStorage.removeItem("user")
+                  // router.push("/")
+                  window.location.href = '/';
+                }):(() => setDropDownActive(!dropDownActive))}
                 className={`${
                   navItem.active
                     ? "text-primary"

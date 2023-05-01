@@ -52,7 +52,9 @@ const AddPost = () => {
     content: Yup.string(),
   });
 
-  const handleSubmit = (values: any) => {};
+  const handleSubmit = (values: any) => {
+    console.log(values,"valuesvalues")
+  };
 
   return (
     <Formik
@@ -198,6 +200,7 @@ const AddPost = () => {
             </div>
             {/* publish */}
             <Button
+              type="submit"
               action={() => {}}
               className="!px-16 py-2.5 mt-auto flex gap-2 items-center w-full md:w-fit justify-center "
             >
