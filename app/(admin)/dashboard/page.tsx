@@ -20,11 +20,24 @@ import {
 } from "@/components/pages/creator";
 import { Pagination } from "@/components/shared";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // ==========================================================
 // DASHBOARD PAGE COMPONENT =================================
 // ==========================================================
 export default function DashboardPage() {
+  const [userType , setUserType] = useState("")
+  const route = useRouter()
+
+  useEffect(()=>{
+    const data = JSON.parse(localStorage.getItem("user") as any) as any
+    console.log(data,"rolerole")
+    if(data && data?.role != "creator" ) route.push("/")
+    else if(data==null&&userType==undefined) route.push("/")
+    setUserType(data?.role)
+  },[userType])
+  if(userType != "creator") return <></>
   return (
     <section className="py-8 md:py-14 md:w-[90%] mx-auto  px-6 flex flex-col md:flex-row gap-8">
       {/* left - info  */}
