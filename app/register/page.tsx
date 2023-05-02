@@ -3,8 +3,10 @@ import { useForm } from 'react-hook-form';
 import {registerApi} from '../../http'
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import { errorToast } from '@/helper/toster';
+import { errorToast, successToast} from '@/helper/toster';
 import { getLocaleData } from "../../service/authService";
+import { getDashAccount, getMnemonic } from '../utils'
+
 // ==========================================================
 // LOGIN PAGE COMPONENT =================================
 // ==========================================================
@@ -13,7 +15,30 @@ export default function Register() {
   const router = useRouter();
   const { register, handleSubmit,  formState:{ errors } } = useForm();
   const [loading, setLoading] = useState(false)
+  const [accountInfo, setAccountInfo] = useState<any>({})
+  const [isAccountCreated, setAccountCreated] = useState(false)
 
+  useEffect(() => {
+    const mnemonic = getMnemonic()
+    console.log("mnemonic",mnemonic)
+    getDashAccount(mnemonic)
+      .then((account) => {
+        console.log("ACCOUNT",account)
+        setAccountInfo(account)
+        const {
+          mnemonic:any,
+          balance: { confirmed: balance },
+        } = account
+        if (balance === 0) {
+          successToast(`Please charge your account`)
+        }
+        localStorage.setItem('mnemonic', mnemonic || "")
+        setAccountCreated(true)
+      })
+      .catch((e) => {
+        errorToast(e.toString())
+      })
+  }, [])
   useEffect(()=>{
     const data = getLocaleData("user") as any
     if(data) {
@@ -49,6 +74,8 @@ export default function Register() {
       <div className="h-full mt-5  bg-white-200  flex items-center  align-middle w-full justify-center">
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white-500 shadow-xl shadow-gray-500/20  border w-96 h-3/6 border-gray-400 rounded-md mt-5 px-4 pt-4 pb-8">
         <div className='flex justify-center  font-medium text-2xl  mb-4'>Registeration</div>
+        <h4>Your Dash Address is</h4>
+            <div>{accountInfo?.address}</div>
           <div className="mb-4">
             <label htmlFor="username" className="block text-gray-700  font-medium mb-2">
               Email
