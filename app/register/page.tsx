@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { errorToast, successToast} from '@/helper/toster';
 import { getLocaleData } from "../../service/authService";
 import { getDashAccount, getMnemonic } from '../utils'
+import PasswordStrengthBar from 'react-password-strength-bar'
 
 // ==========================================================
 // LOGIN PAGE COMPONENT =================================
@@ -13,17 +14,16 @@ import { getDashAccount, getMnemonic } from '../utils'
 export default function Register() {
   const [userType , setUserType] = useState("")
   const router = useRouter();
-  const { register, handleSubmit,  formState:{ errors } } = useForm();
+  const { register, handleSubmit, getValues, formState:{ errors } } = useForm();
   const [loading, setLoading] = useState(false)
   const [accountInfo, setAccountInfo] = useState<any>({})
   const [isAccountCreated, setAccountCreated] = useState(false)
+  const [password , setPassword] = useState("")
 
   useEffect(() => {
     const mnemonic = getMnemonic()
-    console.log("mnemonic",mnemonic)
-    getDashAccount(mnemonic)
+    getDashAccount(mnemonic || null)
       .then((account) => {
-        console.log("ACCOUNT",account)
         setAccountInfo(account)
         const {
           mnemonic:any,
@@ -62,6 +62,10 @@ export default function Register() {
 
   const onSubmit = (data:any) => {
     setLoading(true)
+    if(data.password!=data.confirmpassword){
+      errorToast("Confirm password doesn't match with the Password")
+      return
+    }
     registerApi(data).then((result)=>{
       setLoading(false)
       if(result)router.push("/login")
@@ -100,10 +104,9 @@ export default function Register() {
             <label htmlFor="role" className="block text-gray-700  font-medium mb-2">
               Role
             </label>
-            <input
+            <select
               autoComplete="off"
               id="role"
-              type="role"
               placeholder="Role"
               className={`shadow  border w-full border border-gray-300 hover:shadow-lg hover:shadow-gray-500/20 font-small  text-black px-3 py-3 rounded-md  leading-tight focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:shadow-lg focus:shadow-gray-500/20
               ${
@@ -111,7 +114,10 @@ export default function Register() {
               }
               `}
               {...register("role", { required: true })}
-            />
+            >
+              <option value="creator">Creator</option>
+              <option value="supporter">Supporter</option>
+            </select>
             {  errors.role && (
               <p className="text-red-500 text-xs italic">Please enter an role</p>
             )}
@@ -125,6 +131,9 @@ export default function Register() {
               id="password"
               type="password"
               placeholder="Password"
+              onInput={(e:any)=>{
+                setPassword(e.target.value)}
+              }
               className={`shadow  border w-full border border-gray-300 hover:shadow-lg hover:shadow-gray-500/20 font-small  text-black px-3 py-3 rounded-md  leading-tight focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:shadow-lg focus:shadow-gray-500/20
                 ${(errors.password) ? 'border-red-500' : ''
               }`}
@@ -135,25 +144,27 @@ export default function Register() {
             )}
           </div>
           <div className="mb-4">
-            <label htmlFor="dash" className="block text-gray-700  font-medium mb-2">
-              Dash
+            <label htmlFor="password" className="block text-gray-700  font-medium mb-2">
+              Confirm Password
             </label>
             <input
               autoComplete="off"
-              id="dash"
-              type="dash"
-              placeholder="Dash"
+              id="confirmpassword"
+              type="password"
+              placeholder="Confirm Password"
               className={`shadow  border w-full border border-gray-300 hover:shadow-lg hover:shadow-gray-500/20 font-small  text-black px-3 py-3 rounded-md  leading-tight focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:shadow-lg focus:shadow-gray-500/20
-              ${
-                (errors&&errors.dash) ? 'border-red-500' : ''
-              }
-              `}
-              {...register("dash", { required: true })}
+                ${(errors.password) ? 'border-red-500' : ''
+              }`}
+              {...register("confirmpassword", { required: true })}
             />
-            {  errors.dash && (
-              <p className="text-red-500 text-xs italic">Please enter an dash</p>
+            {errors.password && (
+              <p className="text-red-500 text-xs italic">Please enter a password</p>
             )}
           </div>
+          <PasswordStrengthBar
+                      style={{ marginTop: 12 }}
+                      password={getValues('password')}
+                    />
           <div className="mb-4 pt-3">
             <button
               type="submit"

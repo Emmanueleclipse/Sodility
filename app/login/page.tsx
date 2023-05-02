@@ -106,7 +106,6 @@ export default function Login() {
               type="password"
               placeholder="Password"
               onInput={(e:any)=>{
-                console.log("E",e)
                 setPassword(e.target.value)}
               }
               className={`shadow appearance-none border border-gray-300 hover:shadow-lg hover:shadow-gray-500/20 rounded-md w-full py-3 px-3  leading-tight focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:shadow-lg focus:shadow-gray-500/20 
